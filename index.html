@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#070b1a">
+<link rel="icon" href="data:,">
+<title>NEON DRIFT — Starfield Run</title>
+<style>
+:root{color-scheme:dark;--bg:#070b1a;--panel:rgba(13,20,43,.78);--cyan:#62f5ff;--pink:#ff5ca8;--gold:#ffda78;--muted:#91a1c9}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:#f5f8ff;touch-action:none}
+body{background:radial-gradient(ellipse at 50% 110%,#17254b 0%,#0a1026 45%,#060917 100%);}
+#app{position:relative;width:100%;height:100%;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:clamp(12px,3vh,28px) 14px max(12px,env(safe-area-inset-bottom));}
+.topbar{z-index:2;width:min(100%,760px);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}.mark{width:38px;height:38px;border:1px solid #65f6ff77;border-radius:12px;display:grid;place-items:center;color:var(--cyan);background:#142448;box-shadow:0 0 24px #48dff033;font-size:19px}.title{font-weight:900;letter-spacing:.16em;font-size:13px}.subtitle{font-size:10px;letter-spacing:.18em;color:#8191b8;margin-top:3px}
+.scoreboard{display:flex;gap:8px}.stat{min-width:78px;text-align:center;padding:7px 12px;border:1px solid #788cb633;background:#0d1530aa;border-radius:12px}.stat small{display:block;color:#9eacd0;font-size:9px;letter-spacing:.16em}.stat b{font-size:17px;letter-spacing:.06em}
+#stage{position:relative;flex:1;min-height:0;width:min(100%,760px);border:1px solid #6befff45;border-radius:22px;overflow:hidden;background:#080e20;box-shadow:0 0 60px #28c6ff12,inset 0 0 40px #0e2b5366}
+canvas{display:block;width:100%;height:100%;}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,#07102055,#071020bb);padding:22px;z-index:3;transition:opacity .2s}.overlay.hidden{opacity:0;pointer-events:none}.card{width:min(100%,360px);padding:28px 24px;text-align:center;border:1px solid #8cefff55;border-radius:22px;background:linear-gradient(145deg,#17264beF,#0b1229f2);box-shadow:0 20px 70px #0009,0 0 36px #45e8ff19}.eyebrow{font-size:10px;letter-spacing:.28em;color:var(--cyan);font-weight:800}.card h1{font-size:clamp(29px,8vw,42px);line-height:1;margin:12px 0 9px;letter-spacing:.08em}.card p{font-size:13px;color:#b8c5e4;line-height:1.55;margin:10px auto 20px;max-width:290px}.primary{border:0;border-radius:12px;padding:14px 22px;width:100%;font-weight:900;letter-spacing:.16em;color:#06101c;background:linear-gradient(100deg,#67f4ff,#a4ffe2);box-shadow:0 0 25px #45e8ff40;cursor:pointer;font-size:13px}.primary:active{transform:translateY(1px)}.hint{font-size:10px!important;color:#8292b9!important;margin:15px 0 0!important;letter-spacing:.04em}
+.bottom{z-index:2;width:min(100%,760px);display:flex;justify-content:space-between;align-items:center;padding-top:10px;color:#8292b9;font-size:10px;letter-spacing:.08em}.bottom span strong{color:#c6d3f0}.sound{border:1px solid #8295bd44;background:#0d1530aa;color:#c5d5f3;border-radius:9px;padding:7px 10px;font-size:10px;letter-spacing:.1em;cursor:pointer}
+.touch-controls{position:absolute;z-index:2;bottom:15px;left:0;right:0;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}.pad{display:flex;gap:10px}.control{pointer-events:auto;width:58px;height:58px;border:1px solid #78eeff70;border-radius:17px;background:#10234acc;color:#8efaff;font-size:24px;display:grid;place-items:center;box-shadow:0 0 22px #36dff522;user-select:none;-webkit-user-select:none;touch-action:none}.control:active,.control.active{background:#1b6680dd;transform:scale(.96)}.mobile-note{display:none}
+@media(max-width:520px){#app{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(8px,env(safe-area-inset-bottom))}.topbar{margin-bottom:8px}.mark{width:34px;height:34px}.title{font-size:11px}.subtitle{font-size:8px}.stat{min-width:62px;padding:6px 8px}.stat b{font-size:15px}.stat small{font-size:8px}#stage{border-radius:16px}.bottom{font-size:8px}.touch-controls{bottom:12px}.control{width:56px;height:56px}.mobile-note{display:inline}}
+</style>
+</head>
+<body>
+<main id="app">
+  <header class="topbar">
+    <div class="brand"><div class="mark">✦</div><div><div class="title">NEON DRIFT</div><div class="subtitle">STARFIELD RUN</div></div></div>
+    <div class="scoreboard"><div class="stat"><small>SCORE</small><b id="score">00000</b></div><div class="stat"><small>BEST</small><b id="best">00000</b></div></div>
+  </header>
+  <section id="stage" aria-label="Neon Drift game">
+    <canvas id="game" aria-label="Dodge and blast asteroids in a neon starfield"></canvas>
+    <div class="overlay" id="overlay"><div class="card"><div class="eyebrow" id="eyebrow">PILOT, READY?</div><h1 id="headline">NEON<br>DRIFT</h1><p id="message">The belt is getting crowded. Blast the rocks, collect energy, and see how long you can hold the line.</p><button class="primary" id="play">START RUN</button><p class="hint" id="hint">MOVE: ← → or A / D &nbsp;·&nbsp; BLAST: SPACE</p></div></div>
+    <div class="touch-controls"><div class="pad"><button class="control" data-key="left" aria-label="Move left">‹</button><button class="control" data-key="right" aria-label="Move right">›</button></div><div class="pad"><button class="control" data-key="fire" aria-label="Fire">✦</button></div></div>
+  </section>
+  <footer class="bottom"><span><strong>← →</strong> MOVE <span class="mobile-note"> · TOUCH PAD</span></span><button class="sound" id="sound">♪ SOUND ON</button><span><strong>SPACE</strong> BLAST</span></footer>
+</main>
+<script>
+(()=>{
+ const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),stage=document.querySelector('#stage');
+ const scoreEl=document.querySelector('#score'),bestEl=document.querySelector('#best'),overlay=document.querySelector('#overlay'),playBtn=document.querySelector('#play');
+ let W=0,H=0,dpr=1,state='ready',score=0,best=Number(localStorage.getItem('neon-drift-best')||0),last=0,elapsed=0,spawnTimer=0,shotTimer=0,shake=0,soundOn=true,audio;
+ const keys={left:false,right:false,fire:false},stars=[],rocks=[],shots=[],sparks=[],gems=[];
+ const ship={x:0,y:0,r:14,vx:0,invuln:0};
+ bestEl.textContent=String(best).padStart(5,'0');
+ function resize(){const r=stage.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ship.x=W/2;ship.y=H*.78;stars.length=0;for(let i=0;i<110;i++)stars.push({x:Math.random()*W,y:Math.random()*H,z:Math.random()*1.7+.3,r:Math.random()*1.3+.3})}
+ new ResizeObserver(resize).observe(stage);resize();
+ function setScore(n){score=n;scoreEl.textContent=String(score).padStart(5,'0')}
+ function start(){rocks.length=shots.length=sparks.length=gems.length=0;setScore(0);elapsed=0;spawnTimer=.5;shotTimer=0;ship.x=W/2;ship.invuln=1.5;state='playing';overlay.classList.add('hidden');last=performance.now()}
+ function finish(){if(state!=='playing')return;state='over';if(score>best){best=score;localStorage.setItem('neon-drift-best',best);bestEl.textContent=String(best).padStart(5,'0')}document.querySelector('#eyebrow').textContent='RUN COMPLETE';document.querySelector('#headline').innerHTML='NICE<br>FLIGHT';document.querySelector('#message').textContent=`You scored ${score.toLocaleString()} points. The asteroid belt is still out there — want another run?`;playBtn.textContent='RUN AGAIN';document.querySelector('#hint').textContent='TIP: KEEP MOVING — STAYING STILL IS DANGEROUS';overlay.classList.remove('hidden');beep(170,.18)}
+ function beep(freq,duration=.08){if(!soundOn)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.035,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.start();o.stop(audio.currentTime+duration)}catch{}}
+ function burst(x,y,color,n=9){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=Math.random()*150+30;sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.35+Math.random()*.5,max:.85,color,r:Math.random()*2.5+1})}}
+ function spawnRock(){const r=12+Math.random()*18+Math.min(elapsed*.12,12);rocks.push({x:r+Math.random()*(W-r*2),y:-r,r,vx:(Math.random()-.5)*35,vy:75+Math.random()*65+Math.min(elapsed*2,100),rot:Math.random()*6,spin:(Math.random()-.5)*2,hp:r>29?2:1,seed:Math.random()*100})}
+ function fire(){shots.push({x:ship.x,y:ship.y-16,vy:-490});beep(540,.035)}
+ function update(dt){elapsed+=dt;const speed=300;ship.vx=(keys.right?1:0)-(keys.left?1:0);ship.x=Math.max(ship.r+4,Math.min(W-ship.r-4,ship.x+ship.vx*speed*dt));ship.invuln=Math.max(0,ship.invuln-dt);
+  spawnTimer-=dt;if(spawnTimer<=0){spawnRock();spawnTimer=Math.max(.27,.85-elapsed*.008)+Math.random()*.34}
+  shotTimer-=dt;if(keys.fire&&shotTimer<=0){fire();shotTimer=.24}
+  for(let i=rocks.length-1;i>=0;i--){const a=rocks[i];a.x+=a.vx*dt;a.y+=a.vy*dt;a.rot+=a.spin*dt;if(a.x<a.r||a.x>W-a.r)a.vx*=-1;if(a.y>H+a.r){rocks.splice(i,1);continue}if(ship.invuln<=0&&Math.hypot(a.x-ship.x,a.y-ship.y)<a.r+ship.r*.72){burst(ship.x,ship.y,'#ff5ca8',24);shake=12;finish();return}}
+  for(let i=shots.length-1;i>=0;i--){const s=shots[i];s.y+=s.vy*dt;if(s.y<-10){shots.splice(i,1);continue}for(let j=rocks.length-1;j>=0;j--){const a=rocks[j];if(Math.hypot(a.x-s.x,a.y-s.y)<a.r){shots.splice(i,1);a.hp--;burst(s.x,s.y,'#69f6ff',5);if(a.hp<=0){burst(a.x,a.y,'#ffb666',12);if(Math.random()<.14)gems.push({x:a.x,y:a.y,vy:115,phase:Math.random()*6});rocks.splice(j,1);setScore(score+100);beep(280,.07)}break}}}
+  for(let i=gems.length-1;i>=0;i--){const g=gems[i];g.y+=g.vy*dt;g.phase+=dt*5;if(Math.hypot(g.x-ship.x,g.y-ship.y)<ship.r+10){gems.splice(i,1);setScore(score+250);burst(g.x,g.y,'#ffda78',12);beep(850,.14)}else if(g.y>H+20)gems.splice(i,1)}
+  for(let i=sparks.length-1;i>=0;i--){const p=sparks[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;if(p.life<=0)sparks.splice(i,1)}
+  for(const s of stars){s.y+=s.z*(70+elapsed*1.1)*dt;if(s.y>H){s.y=0;s.x=Math.random()*W}}
+  shake=Math.max(0,shake-dt*35);
+ }
+ function draw(){ctx.clearRect(0,0,W,H);const grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,'#080d20');grad.addColorStop(1,'#0c1935');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+  ctx.save();if(shake)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  for(const s of stars){ctx.globalAlpha=.35+s.z*.35;ctx.fillStyle=s.z>1.5?'#b9fbff':'#708bbd';ctx.fillRect(s.x,s.y,s.r,s.r*(1+s.z))}ctx.globalAlpha=1;
+  // distant orbital glow
+  const glow=ctx.createRadialGradient(W*.5,H*.44,2,W*.5,H*.44,Math.max(W,H)*.65);glow.addColorStop(0,'#15386200');glow.addColorStop(.7,'#162b4a11');glow.addColorStop(1,'#060a1800');ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+  for(const a of rocks){ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.rot);ctx.beginPath();for(let i=0;i<9;i++){const ang=i*Math.PI*2/9,rr=a.r*(.79+.2*Math.sin(i*12.3+a.seed));const x=Math.cos(ang)*rr,y=Math.sin(ang)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fillStyle='#29334d';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=a.hp>1?'#ff8b7777':'#9aabc555';ctx.stroke();ctx.beginPath();ctx.arc(-a.r*.22,-a.r*.13,a.r*.2,0,7);ctx.fillStyle='#0d1426';ctx.fill();ctx.restore()}
+  for(const s of shots){ctx.shadowBlur=14;ctx.shadowColor='#65f5ff';ctx.fillStyle='#b5ffff';ctx.fillRect(s.x-2,s.y-10,4,13);ctx.shadowBlur=0}
+  for(const g of gems){ctx.save();ctx.translate(g.x,g.y);ctx.rotate(g.phase);ctx.shadowBlur=16;ctx.shadowColor='#ffda78';ctx.fillStyle='#ffe99b';ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(7,0);ctx.lineTo(0,8);ctx.lineTo(-7,0);ctx.closePath();ctx.fill();ctx.restore()}
+  for(const p of sparks){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}ctx.globalAlpha=1;
+  // ship and exhaust
+  if(state==='playing'&&!(ship.invuln>0&&Math.floor(ship.invuln*12)%2===0)){const x=ship.x,y=ship.y;ctx.save();ctx.translate(x,y);ctx.shadowBlur=20;ctx.shadowColor='#50eaff';ctx.fillStyle='#62edff';ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(14,12);ctx.lineTo(0,7);ctx.lineTo(-14,12);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#f0feff';ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(5,6);ctx.lineTo(-5,6);ctx.closePath();ctx.fill();ctx.fillStyle='#ff8bcb';ctx.beginPath();ctx.moveTo(-5,12);ctx.lineTo(0,22+Math.random()*5);ctx.lineTo(5,12);ctx.fill();ctx.restore()}
+  ctx.restore();
+  // gentle scan lines
+  ctx.fillStyle='#c9faff08';for(let y=0;y<H;y+=5)ctx.fillRect(0,y,W,1);
+ }
+ function frame(t){const dt=Math.min(.033,(t-last)/1000||0);last=t;if(state==='playing')update(dt);else{for(const s of stars){s.y+=s.z*20*dt;if(s.y>H)s.y=0}}draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+ playBtn.addEventListener('click',()=>{if(audio&&audio.state==='suspended')audio.resume();if(state==='paused'){state='playing';overlay.classList.add('hidden');last=performance.now();document.querySelector('#eyebrow').textContent='PILOT, READY?';document.querySelector('#headline').innerHTML='NEON<br>DRIFT';document.querySelector('#message').textContent='The belt is getting crowded. Blast the rocks, collect energy, and see how long you can hold the line.';playBtn.textContent='START RUN';document.querySelector('#hint').textContent='MOVE: ← → or A / D  ·  BLAST: SPACE'}else start()});
+ window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight',' ','a','A','d','D'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')keys.left=true;if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')keys.right=true;if(e.key===' ')keys.fire=true;if(e.key==='Escape'&&state==='playing'){state='paused';document.querySelector('#eyebrow').textContent='PAUSED';document.querySelector('#headline').innerHTML='TAKE A<br>BREATHER';document.querySelector('#message').textContent='The starfield can wait. Ready to jump back in?';playBtn.textContent='RESUME RUN';overlay.classList.remove('hidden')}});
+ window.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')keys.left=false;if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')keys.right=false;if(e.key===' ')keys.fire=false});
+ document.querySelectorAll('.control').forEach(b=>{const k=b.dataset.key;const down=e=>{e.preventDefault();keys[k]=true;b.classList.add('active');try{b.setPointerCapture(e.pointerId)}catch{}};const up=e=>{e.preventDefault();keys[k]=false;b.classList.remove('active')};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up)});
+ document.querySelector('#sound').addEventListener('click',e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'♪ SOUND ON':'♪ SOUND OFF'});
+})();
+</script>
+</body>
+</html>
